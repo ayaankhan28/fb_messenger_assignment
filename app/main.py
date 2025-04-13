@@ -3,13 +3,11 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 import sys
 import os
-
 from app.api.routes import message_router, conversation_router
 from app.controllers.message_controller import MessageController
 from app.controllers.conversation_controller import ConversationController
 from app.db.cassandra_client import cassandra_client
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -22,7 +20,6 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # In production, this should be restricted
@@ -31,18 +28,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Dependency injection
+
 def get_message_controller():
-    """Dependency for message controller."""
     return MessageController()
 
 def get_conversation_controller():
-    """Dependency for conversation controller."""
     return ConversationController()
 
-# Update the routes with the dependencies
-message_router.dependency_overrides[MessageController] = get_message_controller
-conversation_router.dependency_overrides[ConversationController] = get_conversation_controller
+
+app.dependency_overrides[MessageController] = get_message_controller
+app.dependency_overrides[ConversationController] = get_conversation_controller
+
 
 # Include routers
 app.include_router(message_router)
